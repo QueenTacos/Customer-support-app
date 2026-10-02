@@ -28,6 +28,7 @@ export const FIELD_LABELS: Record<string, string> = {
   order_value: "Order Value",
   shipping_cost: "Shipping Cost",
   tracking_number: "Tracking Number",
+  fedex_case_number: "FedEx Case #",
   issue: "Issue",
   issue_summary: "Issue Description",
   fault: "Fault",

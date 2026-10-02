@@ -17,6 +17,8 @@ import {
 import { DetailList, yesNoText, type DetailItem } from "@/components/tickets/detail-list";
 import { StatusBadge } from "@/components/tickets/status-badge";
 import { checkTicketNumber, createTicket } from "@/lib/actions/tickets";
+import { QuickImportPanel } from "@/components/tickets/quick-import/quick-import-panel";
+import type { ApplyPayload } from "@/components/tickets/quick-import/import-review";
 import {
   WIZARD_STEP_FIELDS,
   emptyTicketForm,
@@ -130,6 +132,38 @@ export function NewTicketWizard({
     if (key === "ticket_number") setDuplicateOf(null);
   }
 
+  /** Merge values confirmed in the Quick Import review into the form (nothing is saved). */
+  function applyImport({ patch, note: importedNote }: ApplyPayload) {
+    const keys = Object.keys(patch) as (keyof TicketFormValues)[];
+    setValues((prev) => {
+      const next = { ...prev, ...(patch as Partial<TicketFormValues>) };
+      // A material always carries its own department.
+      if (patch.material_id) {
+        const m = lookups.materials.find((x) => x.id === patch.material_id);
+        if (m) next.department_id = m.department_id;
+      }
+      // Same fault behaviour as typing: auto-suggest unless a fault was chosen.
+      if (!("fault" in patch) && !faultManual && ("issue" in patch || "carrier_responsible" in patch)) {
+        const s = suggestFault({
+          issue: next.issue as Issue,
+          carrier_responsible: next.carrier_responsible === "" ? null : next.carrier_responsible === "yes",
+        });
+        next.fault = s?.fault ?? "";
+      }
+      return next;
+    });
+    if ("fault" in patch) setFaultManual(true);
+    if (importedNote) {
+      setNote((prev) =>
+        importedNote.mode === "append" && prev.trim() ? `${prev.trimEnd()}\n${importedNote.text}` : importedNote.text,
+      );
+    }
+    if (keys.length) setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => !keys.includes(k as keyof TicketFormValues))));
+    if (patch.ticket_number) setDuplicateOf(null);
+    const total = keys.length + (importedNote ? 1 : 0);
+    toast.success(`Filled ${total} item${total === 1 ? "" : "s"} from Quick Import. Review each step before saving.`);
+  }
+
   function focusFirstError(errs: FieldErrors) {
     const first = Object.keys(errs).find((k) => errs[k as keyof FieldErrors]);
     if (first) setTimeout(() => document.getElementById(`f-${first}`)?.focus(), 50);
@@ -222,7 +256,7 @@ export function NewTicketWizard({
               size="sm"
               variant="primary"
               onClick={() => {
-                setValues(pendingDraft.values);
+                setValues({ ...initial, ...pendingDraft.values });
                 setNote(pendingDraft.note);
                 setStep(Math.min(4, Math.max(1, pendingDraft.step)));
                 setFaultManual(pendingDraft.faultManual);
@@ -245,6 +279,14 @@ export function NewTicketWizard({
           </span>
         </div>
       )}
+
+      <QuickImportPanel
+        lookups={lookups}
+        values={values}
+        defaults={initial}
+        currentNote={note}
+        onApply={applyImport}
+      />
 
       {/* Stepper */}
       <ol className="mb-6 grid grid-cols-2 gap-2 md:grid-cols-4">

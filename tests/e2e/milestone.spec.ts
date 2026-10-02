@@ -173,8 +173,12 @@ test.describe("signed in", () => {
     await page.getByRole("button", { name: "Save", exact: true }).click();
     await expect(page.getByRole("main").getByText(/^\d+:\d{2}$/).first()).toBeVisible();
     await page.goto("/dashboard");
-    const firstRow = page.locator("tbody tr").first();
-    await expect(firstRow).toContainText(TICKET);
+    // Rush rows sit in the top priority groups (an older overdue rush may rank above it).
+    const row = page.locator("tbody tr", { hasText: TICKET });
+    await expect(row.getByText(/^\d+:\d{2}$/)).toBeVisible();
+    const rows = await page.locator("tbody tr").allInnerTexts();
+    const idx = rows.findIndex((t) => t.includes(TICKET));
+    expect(rows.slice(0, idx).every((t) => /Rush Reprint|overdue/i.test(t))).toBe(true);
   });
 });
 

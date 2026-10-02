@@ -45,7 +45,7 @@ export function GlobalSearch() {
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search ticket #, order #, customer, contact, tracking…"
+        placeholder="Search ticket #, order #, customer, contact, tracking, FedEx case…"
         aria-label="Search tickets"
         className={cn(inputClass, "h-10 bg-surface pl-9 pr-10")}
       />

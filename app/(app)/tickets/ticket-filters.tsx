@@ -59,7 +59,7 @@ export function TicketFilters({
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Ticket #, order #, customer, contact, tracking #…"
+            placeholder="Ticket #, order #, customer, contact, tracking #, FedEx case…"
             className="pl-9"
             aria-label="Search tickets"
           />

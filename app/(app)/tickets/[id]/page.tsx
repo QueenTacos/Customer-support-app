@@ -259,6 +259,7 @@ function DetailsTab({ ticket: t }: { ticket: T }) {
               { label: "Order Value", value: m(t.order_value) },
               { label: "Shipping Cost", value: m(t.shipping_cost) },
               { label: "Tracking Number", value: t.tracking_number && <span className="font-mono">{t.tracking_number}</span> },
+              { label: "FedEx Case #", value: t.fedex_case_number && <span className="font-mono">{t.fedex_case_number}</span> },
               { label: "Assigned To", value: t.assigned_to },
             ]}
           />
@@ -353,6 +354,7 @@ async function TrackingTab({ ticket: t }: { ticket: T }) {
                   </a>
                 ),
               },
+              { label: "FedEx Case #", value: t.fedex_case_number && <span className="font-mono">{t.fedex_case_number}</span> },
               { label: "Shipping Cost", value: t.shipping_cost === null ? "" : formatMoney(t.shipping_cost) },
               { label: "Delivered", value: yesNoText(t.delivered) },
               { label: "All Boxes Received", value: yesNoText(t.all_boxes_received) },

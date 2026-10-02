@@ -21,6 +21,8 @@ export interface Ticket {
   order_value: number | null;
   shipping_cost: number | null;
   tracking_number: string | null;
+  /** FedEx trace/claim case, e.g. C-259861376 (migration 0009). */
+  fedex_case_number: string | null;
 
   issue: Issue;
   issue_summary: string | null;
@@ -76,6 +78,13 @@ export interface Material {
   is_rigid: boolean;
   sort_order: number;
   is_active: boolean;
+}
+
+/** Shorthand name for a material (material_aliases, migration 0009). */
+export interface MaterialAlias {
+  id: string;
+  material_id: string;
+  alias: string;
 }
 
 export interface TicketWithLookups extends Ticket {

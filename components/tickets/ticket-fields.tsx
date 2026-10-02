@@ -23,13 +23,15 @@ import {
 import { CONDITIONAL_FIELDS, questionsFor, type Question } from "@/lib/domain/conditional-questions";
 import { suggestFault } from "@/lib/domain/fault-suggestion";
 import type { FieldErrors, TicketFormValues, YesNo as YesNoValue } from "@/lib/validation/ticket";
-import type { Department, Material } from "@/types/domain";
+import type { Department, Material, MaterialAlias } from "@/types/domain";
 
 export type SetField = <K extends keyof TicketFormValues>(key: K, value: TicketFormValues[K]) => void;
 
 export interface Lookups {
   departments: Department[];
   materials: Material[];
+  /** Material shorthand (used by Quick Import). */
+  aliases?: MaterialAlias[];
 }
 
 interface SectionProps {
@@ -262,10 +264,18 @@ export function CustomerOrderSection({
         <TextField name="sheets" label="Sheets" inputMode="numeric" values={values} set={set} errors={errors} />
       </Grid>
 
-      <Grid cols={3}>
+      <Grid cols={4}>
         <MoneyField name="order_value" label="Order Value" values={values} set={set} errors={errors} />
         <MoneyField name="shipping_cost" label="Shipping Cost" values={values} set={set} errors={errors} />
         <TextField name="tracking_number" label="Tracking Number" values={values} set={set} errors={errors} />
+        <TextField
+          name="fedex_case_number"
+          label="FedEx Case #"
+          placeholder="e.g. C-259861376"
+          values={values}
+          set={set}
+          errors={errors}
+        />
       </Grid>
     </div>
   );
