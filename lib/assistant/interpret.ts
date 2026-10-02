@@ -145,6 +145,10 @@ export function interpret(ex: Extraction, opts: InterpretOptions): Interpretatio
         evidence: c.text,
       });
       if (!get("department_id")) add({ key: "department_id", value: m.departmentId, confidence: "extracted", source: "Material's department", evidence: m.name });
+      // Keep the specific order wording ("Coro 4mil Double Sided") when it isn't just the material name.
+      if (m.how !== "name" && !get("material_type")) {
+        add({ key: "material_type", value: c.text, confidence: "extracted", source: `${c.source} · product detail`, evidence: c.text });
+      }
     }
   }
   if (!get("material_id")) {

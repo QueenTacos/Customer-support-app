@@ -98,7 +98,9 @@ test("New Ticket · Ticket Assistant fills the wizard (nothing saved until Save 
   await expect(page.locator("#f-tracking_number")).toHaveValue("");
   await expect(page.locator("#f-fedex_case_number")).toHaveValue("C-259861376");
   await expect(page.locator("#f-quantity")).toHaveValue("2");
-  await expect(page.locator("#f-material")).toHaveValue("Coro 4mil Double Sided");
+  await expect(page.locator("#f-material")).toHaveValue("CORO");
+  await expect(page.locator("#f-material_type")).toHaveValue("Coro 4mil Double Sided");
+  await expect(page.locator("#f-department option:checked")).toHaveText("RIGID");
   await shot(page, "02-new-ticket-form-filled");
 
   await page.getByRole("button", { name: /next/i }).click();
@@ -162,15 +164,28 @@ test("Close Ticket is a suggestion only", async ({ page }) => {
   await expect(page.locator("header, main").getByText("Closed", { exact: true })).toHaveCount(0);
 });
 
-test("Material box searches every active material and picking one sets its department", async ({ page }) => {
+test("Material box: all departments when blank, one department when chosen, material sets department", async ({ page }) => {
   await page.goto("/tickets/new");
-  await page.locator("#f-department").selectOption({ label: "RIGID" });
+  // Department blank → search across every department.
   await page.locator("#f-material").fill("svgmesh");
   await page.getByRole("option", { name: "svgMESH" }).click();
-  await expect(page.locator("#f-department")).toHaveValue(/.+/);
   await expect(page.locator("#f-department option:checked")).toHaveText("BANNER");
-  // Aliases are searchable too
+
+  // Department chosen → only that department's materials.
+  await page.locator("#f-department").selectOption({ label: "RIGID" });
   await page.locator("#f-material").fill("");
-  await page.locator("#f-material").fill("4m DS");
-  await expect(page.getByRole("option", { name: "Coro 4mil Double Sided" })).toBeVisible();
+  await page.locator("#f-material").click();
+  const listbox = page.getByRole("listbox");
+  for (const m of ["ACRYLIC", "ALUMINUM", "BACKLIT", "CORO", "FOAMCORE", "JBOND", "POLYAIR", "POLYSTYRENE", "PVC"]) {
+    await expect(listbox.getByRole("option", { name: m, exact: true })).toBeVisible();
+  }
+  await expect(listbox.getByRole("option")).toHaveCount(9);
+  await shot(page, "06-rigid-materials");
+  await page.locator("#f-material").fill("svg");
+  await expect(page.getByText("No match in this department — clear Department to search all")).toBeVisible();
+
+  // Order wording (aliases) finds the canonical material.
+  await page.locator("#f-material").fill("Coro 4mil Double");
+  await page.getByRole("option", { name: "CORO", exact: true }).click();
+  await expect(page.locator("#f-department option:checked")).toHaveText("RIGID");
 });

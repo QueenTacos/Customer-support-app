@@ -27,6 +27,7 @@ export const ASSISTANT_FIELDS = {
 
   department_id: { label: "Department", kind: "department", section: "product" },
   material_id: { label: "Material", kind: "material", section: "product" },
+  material_type: { label: "Material Type", kind: "text", section: "product" },
   size: { label: "Size", kind: "text", section: "product" },
   quantity: { label: "Quantity", kind: "int", section: "product" },
   affected_item_value: { label: "Affected Item Value", kind: "money", section: "product" },
@@ -76,7 +77,7 @@ export const SECTION_TITLES: Record<Section, string> = {
 export const DETERMINISTIC_FIELDS: AssistantFieldKey[] = [
   "ticket_number", "order_number", "tracking_number", "fedex_case_number", "date_opened", "in_hands_date",
   "quantity", "shipping_cost", "affected_item_value", "order_value", "reprint_value", "refund_value",
-  "discount_value", "credit_value", "reprint_order_number", "material_id", "department_id",
+  "discount_value", "credit_value", "reprint_order_number", "material_id", "material_type", "department_id",
 ];
 
 /** Validate/normalise a proposed value for its field. Returns null when invalid. */

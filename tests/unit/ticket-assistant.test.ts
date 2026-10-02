@@ -15,20 +15,28 @@ import { validateAiOutput } from "@/lib/ai/validation";
 
 const RIGID = "dept-rigid-0001";
 const BANNER = "dept-banner-0002";
-const CORO = "mat-coro-ds-0001";
+const ADHESIVE = "dept-adhesive-0003";
+const CORO = "mat-coro-0001";
+// Mirrors migration 0012: CORO is canonical; order wording is an alias.
 const lookups: AssistantLookups = {
   departments: [
     { id: RIGID, code: "RIGID", name: "Rigid" },
     { id: BANNER, code: "BANNER", name: "Banner" },
+    { id: ADHESIVE, code: "ADHESIVE", name: "Adhesive" },
   ],
   materials: [
-    { id: CORO, department_id: RIGID, name: "Coro 4mil Double Sided" },
-    { id: "mat-svg13-0002", department_id: BANNER, name: "svg13OZ" },
+    { id: CORO, department_id: RIGID, name: "CORO" },
+    { id: "mat-pvc-0002", department_id: RIGID, name: "PVC" },
+    { id: "mat-svg13-0003", department_id: BANNER, name: "svg13OZ" },
+    { id: "mat-svgmesh-0004", department_id: BANNER, name: "svgMESH" },
+    { id: "mat-cling207-0005", department_id: ADHESIVE, name: "CLING-GF207" },
+    { id: "mat-oneway50-0006", department_id: ADHESIVE, name: "ONE WAY-50/50" },
+    { id: "mat-oneway70-0007", department_id: ADHESIVE, name: "ONE WAY-70/30" },
   ],
   aliases: [
-    { material_id: CORO, alias: "Coro 4m DS" },
-    { material_id: CORO, alias: "Coro 4mil DS" },
-  ],
+    "Coro 4mil Double Sided", "Coro 4mil Single Sided", "Coro 4m DS", "Coro 4m SS", "Coro 4mil DS", "Coro 4mil SS",
+    "4mil Coro DS", "4mil Coro SS", "4m Coro DS", "4m Coro SS", "Coro DS", "Coro SS",
+  ].map((alias) => ({ material_id: CORO, alias })),
 };
 const TODAY = "2026-10-02";
 
@@ -76,6 +84,7 @@ describe("New Ticket — combined paste", () => {
     ["point_of_contact", "SW", "extracted"],
     ["department_id", RIGID, "extracted"],
     ["material_id", CORO, "extracted"],
+    ["material_type", "Coro 4mil Double Sided", "extracted"],
     ["size", '24"x18", 24"x36"', "extracted"],
     ["quantity", "2", "extracted"],
     ["affected_item_value", "220.00", "extracted"],
@@ -265,6 +274,43 @@ describe("Materials", () => {
     const p = run("SW/ Greg / Coro 4m DS - damaged corners");
     expect(val(p, "material_id")).toBe(CORO);
     expect(val(p, "department_id")).toBe(RIGID);
+    expect(val(p, "material_type")).toBe("Coro 4m DS");
+  });
+
+  it.each([
+    "Coro 4mil Double Sided",
+    "Coro 4mil Single Sided",
+    "Coro 4m DS",
+    "Coro 4m SS",
+    "4mil Coro DS",
+    "4mil Coro SS",
+    "coro 4MIL double sided",
+    "4m Coro Double Sided",
+  ])("%s → CORO (RIGID), wording kept in Material Type", (wording) => {
+    const p = run(`Description\n${wording} - Damage`);
+    expect(get(p, "material_id")).toMatchObject({ value: CORO, confidence: "extracted" });
+    expect(val(p, "department_id")).toBe(RIGID);
+    expect(val(p, "material_type")).toBe(wording);
+    expect(p.unmatchedMaterials).toEqual([]);
+  });
+
+  it.each([
+    ["CLING - GF207", "mat-cling207-0005"],
+    ["cling-gf207", "mat-cling207-0005"],
+    ["Cling GF207", "mat-cling207-0005"],
+    ["ONE WAY - 50/50", "mat-oneway50-0006"],
+    ["One Way 50/50", "mat-oneway50-0006"],
+    ["SVG13OZ", "mat-svg13-0003"],
+    ["svg13oz", "mat-svg13-0003"],
+    ["SVGMESH", "mat-svgmesh-0004"],
+  ])("formatting differences resolve to the same material: %s", (wording, id) => {
+    const p = run(`Description\n${wording} - Damage`);
+    expect(val(p, "material_id")).toBe(id);
+  });
+
+  it("exact name (any case/spacing) doesn't add a Material Type", () => {
+    const p = run("Description\nCLING - GF207 - Damage");
+    expect(get(p, "material_type")).toBeUndefined();
   });
 });
 

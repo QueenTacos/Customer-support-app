@@ -149,14 +149,13 @@ export function CustomerOrderSection({
 
   const materialOptions: ComboOption[] = useMemo(() => {
     const deptOrder = Object.fromEntries(lookups.departments.map((d) => [d.id, d.sort_order]));
-    // ALL active materials are searchable. The chosen department's materials are listed first;
-    // picking a material from another department switches the department to match.
-    const first = (m: Material) => (values.department_id && m.department_id === values.department_id ? 0 : 1);
+    // Department blank → every active material (all departments).
+    // Department chosen → that department's materials. Picking a material sets its department.
+    const inDept = (m: Material) => !values.department_id || m.department_id === values.department_id;
     return lookups.materials
-      .filter((m) => m.is_active || m.id === values.material_id)
+      .filter((m) => (m.is_active && inDept(m)) || m.id === values.material_id)
       .sort(
         (a, b) =>
-          first(a) - first(b) ||
           (deptOrder[a.department_id] ?? 0) - (deptOrder[b.department_id] ?? 0) ||
           a.sort_order - b.sort_order ||
           a.name.localeCompare(b.name),
@@ -248,12 +247,22 @@ export function CustomerOrderSection({
               ))}
           </Select>
         </Field>
-        <Field label="Material" htmlFor="f-material" error={errors.material_id} hint="Type to search. Picking a material sets its department.">
+        <Field
+          label="Material"
+          htmlFor="f-material"
+          error={errors.material_id}
+          hint={
+            values.department_id
+              ? "Showing this department's materials. Clear Department to search all."
+              : "Type to search all materials. Picking one sets its department."
+          }
+        >
           <Combobox
             id="f-material"
             value={values.material_id}
             options={materialOptions}
             placeholder="Search materials…"
+            emptyText={values.department_id ? "No match in this department — clear Department to search all" : "No matches"}
             invalid={!!errors.material_id}
             onChange={(id) => {
               set("material_id", id);

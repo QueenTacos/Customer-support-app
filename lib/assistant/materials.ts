@@ -14,6 +14,7 @@ export function basicNormalize(s: string): string {
     .replace(/[‘’]/g, "'")
     .replace(/[–—]/g, "-")
     .replace(/\s+/g, " ")
+    .replace(/ ?- ?/g, "-")
     .trim();
 }
 
@@ -27,8 +28,9 @@ export function materialKey(s: string): string {
   return tokens.join(" ");
 }
 
+/** Word bag (hyphens count as spaces): "One Way 50/50" = "ONE WAY-50/50". */
 function tokenBag(s: string): string {
-  return materialKey(s).split(" ").sort().join(" ");
+  return materialKey(s.replace(/-/g, " ")).split(" ").filter(Boolean).sort().join(" ");
 }
 
 export interface MaterialMatch {

@@ -114,6 +114,7 @@ export function Combobox({
             setOpen(true);
             setActive(Math.max(0, options.findIndex((o) => o.value === value)));
           }}
+          onClick={() => setOpen(true)}
           onKeyDown={onKeyDown}
         />
         <div className="absolute inset-y-0 right-2 flex items-center gap-1">
