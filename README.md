@@ -57,3 +57,4 @@ proxy.ts                 first-line route gate (Next.js 16 "proxy", formerly mid
 | `npm run typecheck` · `npm run lint` | Type and lint checks |
 | `npm test` | Unit tests |
 | `npm run test:e2e` | End-to-end milestone tests (test database only) |
+
