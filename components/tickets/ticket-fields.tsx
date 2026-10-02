@@ -30,7 +30,7 @@ export type SetField = <K extends keyof TicketFormValues>(key: K, value: TicketF
 export interface Lookups {
   departments: Department[];
   materials: Material[];
-  /** Material shorthand (used by Quick Import). */
+  /** Material shorthand (searchable in the Material box; used by the Ticket Assistant). */
   aliases?: MaterialAlias[];
 }
 
@@ -149,10 +149,25 @@ export function CustomerOrderSection({
 
   const materialOptions: ComboOption[] = useMemo(() => {
     const deptOrder = Object.fromEntries(lookups.departments.map((d) => [d.id, d.sort_order]));
+    // ALL active materials are searchable. The chosen department's materials are listed first;
+    // picking a material from another department switches the department to match.
+    const first = (m: Material) => (values.department_id && m.department_id === values.department_id ? 0 : 1);
     return lookups.materials
-      .filter((m) => (m.is_active || m.id === values.material_id) && (!values.department_id || m.department_id === values.department_id))
-      .sort((a, b) => (deptOrder[a.department_id] ?? 0) - (deptOrder[b.department_id] ?? 0) || a.sort_order - b.sort_order)
-      .map((m) => ({ value: m.id, label: m.name, group: deptName[m.department_id], inactive: !m.is_active }));
+      .filter((m) => m.is_active || m.id === values.material_id)
+      .sort(
+        (a, b) =>
+          first(a) - first(b) ||
+          (deptOrder[a.department_id] ?? 0) - (deptOrder[b.department_id] ?? 0) ||
+          a.sort_order - b.sort_order ||
+          a.name.localeCompare(b.name),
+      )
+      .map((m) => ({
+        value: m.id,
+        label: m.name,
+        group: deptName[m.department_id],
+        inactive: !m.is_active,
+        keywords: (lookups.aliases ?? []).filter((a) => a.material_id === m.id).map((a) => a.alias).join(" "),
+      }));
   }, [lookups, values.department_id, values.material_id, deptName]);
 
   return (
@@ -264,9 +279,13 @@ export function CustomerOrderSection({
         <TextField name="sheets" label="Sheets" inputMode="numeric" values={values} set={set} errors={errors} />
       </Grid>
 
-      <Grid cols={4}>
-        <MoneyField name="order_value" label="Order Value" values={values} set={set} errors={errors} />
+      <Grid cols={3}>
+        <MoneyField name="affected_item_value" label="Affected Item Value" values={values} set={set} errors={errors} />
+        <MoneyField name="order_value" label="Total Order Value" values={values} set={set} errors={errors} />
         <MoneyField name="shipping_cost" label="Shipping Cost" values={values} set={set} errors={errors} />
+      </Grid>
+
+      <Grid cols={2}>
         <TextField name="tracking_number" label="Tracking Number" values={values} set={set} errors={errors} />
         <TextField
           name="fedex_case_number"

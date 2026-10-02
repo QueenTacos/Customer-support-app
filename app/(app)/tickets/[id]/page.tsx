@@ -25,6 +25,7 @@ import { FollowUpCell } from "@/components/tickets/follow-up-cell";
 import { DetailList, yesNoText } from "@/components/tickets/detail-list";
 import { HistoryList } from "@/components/tickets/history-list";
 import { QuickUpdate } from "@/components/tickets/quick-update";
+import { QuickUpdatePanel } from "@/components/assistant/quick-update-panel";
 import { AddNoteForm, NotesPanel } from "@/components/notes/notes-panel";
 import { questionsFor } from "@/lib/domain/conditional-questions";
 import { FAULT_LABELS, ISSUE_LABELS, POC_LABELS, RESOLUTION_LABELS, label } from "@/lib/domain/options";
@@ -142,6 +143,11 @@ export default async function TicketPage(props: PageProps<"/tickets/[id]">) {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
+          {active && (tab === "details" || tab === "notes") && (
+            <div className="mb-6">
+              <QuickUpdatePanel ticketId={ticket.id} lookups={lookups} />
+            </div>
+          )}
           {/* Tabs */}
           <nav className="mb-4 flex gap-1 overflow-x-auto border-b border-line" aria-label="Ticket sections">
             {TABS.map((t) => (
@@ -256,7 +262,8 @@ function DetailsTab({ ticket: t }: { ticket: T }) {
               { label: "Quantity", value: t.quantity },
               { label: "Sq/Ft", value: t.sqft },
               { label: "Sheets", value: t.sheets },
-              { label: "Order Value", value: m(t.order_value) },
+              { label: "Affected Item Value", value: m(t.affected_item_value) },
+              { label: "Total Order Value", value: m(t.order_value) },
               { label: "Shipping Cost", value: m(t.shipping_cost) },
               { label: "Tracking Number", value: t.tracking_number && <span className="font-mono">{t.tracking_number}</span> },
               { label: "FedEx Case #", value: t.fedex_case_number && <span className="font-mono">{t.fedex_case_number}</span> },

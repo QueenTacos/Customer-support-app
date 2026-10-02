@@ -25,6 +25,7 @@ export interface TicketFormValues {
   sqft: string;
   sheets: string;
   order_value: string;
+  affected_item_value: string;
   shipping_cost: string;
   tracking_number: string;
   fedex_case_number: string;
@@ -77,6 +78,7 @@ export function emptyTicketForm(today: string): TicketFormValues {
     sqft: "",
     sheets: "",
     order_value: "",
+    affected_item_value: "",
     shipping_cost: "",
     tracking_number: "",
     fedex_case_number: "",
@@ -130,6 +132,7 @@ export function ticketToForm(t: Ticket): TicketFormValues {
     sqft: t.sqft === null ? "" : Number(t.sqft).toString(),
     sheets: s(t.sheets),
     order_value: t.order_value === null ? "" : Number(t.order_value).toFixed(2),
+    affected_item_value: t.affected_item_value == null ? "" : Number(t.affected_item_value).toFixed(2),
     shipping_cost: t.shipping_cost === null ? "" : Number(t.shipping_cost).toFixed(2),
     tracking_number: s(t.tracking_number),
     fedex_case_number: s(t.fedex_case_number),
@@ -263,6 +266,7 @@ export const ticketSchema = z.object({
   sqft: decimal,
   sheets: int,
   order_value: money,
+  affected_item_value: money,
   shipping_cost: money,
   tracking_number: optText(100),
   fedex_case_number: optText(64),
@@ -306,7 +310,7 @@ export const WIZARD_STEP_FIELDS: Record<1 | 2 | 3, (keyof TicketFormValues)[]> =
   1: [
     "ticket_number", "date_opened", "point_of_contact", "customer_name", "contact_name", "order_number",
     "department_id", "material_id", "material_type", "size", "quantity", "sqft", "sheets",
-    "order_value", "shipping_cost", "tracking_number", "fedex_case_number",
+    "order_value", "affected_item_value", "shipping_cost", "tracking_number", "fedex_case_number",
   ],
   2: [
     "issue", "issue_summary", "fault", "usable_as_is", "package_damaged", "damaged_pieces",

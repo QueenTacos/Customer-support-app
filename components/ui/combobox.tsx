@@ -10,6 +10,8 @@ export interface ComboOption {
   label: string;
   group?: string;
   inactive?: boolean;
+  /** Extra search terms (e.g. material aliases). */
+  keywords?: string;
 }
 
 /**
@@ -45,7 +47,7 @@ export function Combobox({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return options;
-    return options.filter((o) => o.label.toLowerCase().includes(q) || o.group?.toLowerCase().includes(q));
+    return options.filter((o) => o.label.toLowerCase().includes(q) || o.group?.toLowerCase().includes(q) || o.keywords?.toLowerCase().includes(q));
   }, [options, query]);
 
   useEffect(() => {

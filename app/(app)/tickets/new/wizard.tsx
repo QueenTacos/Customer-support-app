@@ -17,8 +17,8 @@ import {
 import { DetailList, yesNoText, type DetailItem } from "@/components/tickets/detail-list";
 import { StatusBadge } from "@/components/tickets/status-badge";
 import { checkTicketNumber, createTicket } from "@/lib/actions/tickets";
-import { QuickImportPanel } from "@/components/tickets/quick-import/quick-import-panel";
-import type { ApplyPayload } from "@/components/tickets/quick-import/import-review";
+import { TicketAssistantPanel } from "@/components/assistant/ticket-assistant-panel";
+import type { FieldValues } from "@/lib/assistant/types";
 import {
   WIZARD_STEP_FIELDS,
   emptyTicketForm,
@@ -132,8 +132,8 @@ export function NewTicketWizard({
     if (key === "ticket_number") setDuplicateOf(null);
   }
 
-  /** Merge values confirmed in the Quick Import review into the form (nothing is saved). */
-  function applyImport({ patch, note: importedNote }: ApplyPayload) {
+  /** Merge values confirmed in the Ticket Assistant review into the form (nothing is saved). */
+  function applyAssistant(patch: FieldValues) {
     const keys = Object.keys(patch) as (keyof TicketFormValues)[];
     setValues((prev) => {
       const next = { ...prev, ...(patch as Partial<TicketFormValues>) };
@@ -153,15 +153,15 @@ export function NewTicketWizard({
       return next;
     });
     if ("fault" in patch) setFaultManual(true);
-    if (importedNote) {
-      setNote((prev) =>
-        importedNote.mode === "append" && prev.trim() ? `${prev.trimEnd()}\n${importedNote.text}` : importedNote.text,
-      );
-    }
     if (keys.length) setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => !keys.includes(k as keyof TicketFormValues))));
     if (patch.ticket_number) setDuplicateOf(null);
-    const total = keys.length + (importedNote ? 1 : 0);
-    toast.success(`Filled ${total} item${total === 1 ? "" : "s"} from Quick Import. Review each step before saving.`);
+    toast.success(`Filled ${keys.length} field${keys.length === 1 ? "" : "s"} from the Ticket Assistant. Review each step before saving.`);
+  }
+
+  /** "Use Note": put the generated note in the First Ticket Note box (appends if there's already text). */
+  function applyGeneratedNote(text: string) {
+    setNote((prev) => (prev.trim() && !prev.includes(text) ? `${prev.trimEnd()}\n${text}` : text));
+    toast.success("Note placed in First Ticket Note. It's saved only when you save the ticket.");
   }
 
   function focusFirstError(errs: FieldErrors) {
@@ -280,12 +280,12 @@ export function NewTicketWizard({
         </div>
       )}
 
-      <QuickImportPanel
+      <TicketAssistantPanel
         lookups={lookups}
         values={values}
         defaults={initial}
-        currentNote={note}
-        onApply={applyImport}
+        onApply={applyAssistant}
+        onUseNote={applyGeneratedNote}
       />
 
       {/* Stepper */}
@@ -367,7 +367,7 @@ export function NewTicketWizard({
               </div>
               <div className="border-t border-line pt-6">
                 <Field
-                  label="First note (optional)"
+                  label="First Ticket Note (optional)"
                   htmlFor="f-note"
                   error={errors.note}
                   hint="Saved to the ticket with today's timestamp. You can add more notes any time."
@@ -449,9 +449,11 @@ function Review({
         { label: "Quantity", value: values.quantity },
         { label: "Sq/Ft", value: values.sqft },
         { label: "Sheets", value: values.sheets },
-        { label: "Order Value", value: money(values.order_value) },
+        { label: "Affected Item Value", value: money(values.affected_item_value) },
+        { label: "Total Order Value", value: money(values.order_value) },
         { label: "Shipping Cost", value: money(values.shipping_cost) },
         { label: "Tracking #", value: values.tracking_number },
+        { label: "FedEx Case #", value: values.fedex_case_number },
       ],
     },
     {
@@ -490,7 +492,7 @@ function Review({
         { label: "Discount Value", value: money(values.discount_value) },
         { label: "Credit Value", value: money(values.credit_value) },
         { label: "Flags", value: [values.add_to_limits && "LIMITS", values.add_to_claims && "Claims"].filter(Boolean).join(", ") },
-        { label: "First note", value: note.trim() ? <span className="whitespace-pre-wrap">{note.trim()}</span> : "", wide: true },
+        { label: "First Ticket Note", value: note.trim() ? <span className="whitespace-pre-wrap">{note.trim()}</span> : "", wide: true },
       ],
     },
   ];

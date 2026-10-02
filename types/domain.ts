@@ -19,6 +19,7 @@ export interface Ticket {
   sqft: number | null;
   sheets: number | null;
   order_value: number | null;
+  affected_item_value: number | null;
   shipping_cost: number | null;
   tracking_number: string | null;
   /** FedEx trace/claim case, e.g. C-259861376 (migration 0009). */

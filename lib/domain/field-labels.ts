@@ -25,7 +25,8 @@ export const FIELD_LABELS: Record<string, string> = {
   quantity: "Quantity",
   sqft: "Sq/Ft",
   sheets: "Sheets",
-  order_value: "Order Value",
+  order_value: "Total Order Value",
+  affected_item_value: "Affected Item Value",
   shipping_cost: "Shipping Cost",
   tracking_number: "Tracking Number",
   fedex_case_number: "FedEx Case #",
@@ -58,7 +59,7 @@ export const FIELD_LABELS: Record<string, string> = {
   add_to_claims: "Needs Claims",
 };
 
-const MONEY_FIELDS = new Set(["order_value", "shipping_cost", "reprint_value", "refund_value", "discount_value", "credit_value"]);
+const MONEY_FIELDS = new Set(["order_value", "affected_item_value", "shipping_cost", "reprint_value", "refund_value", "discount_value", "credit_value"]);
 
 /** Format a stored value for the History "From → To" display. */
 export function formatFieldValue(
