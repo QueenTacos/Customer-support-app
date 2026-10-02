@@ -115,6 +115,8 @@ insert into public.materials (department_id, name, is_rigid, sort_order)
 select d.id, 'Coro 4mil Double Sided', true, 10
 from public.departments d
 where d.code = 'RIGID'
+  -- Skip once CORO (0012) or any Coro record exists, so re-running never re-adds it.
+  and not exists (select 1 from public.materials m where m.department_id = d.id and lower(m.name) like 'coro%')
 on conflict do nothing;
 
 insert into public.material_aliases (material_id, alias)
