@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — dark mode only.
+ * Change colors here and every page follows.
+ */
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-bg: #0a0c16;          /* near-black navy page background */
+  --color-sidebar: #0d1020;
+  --color-surface: #141726;     /* dark charcoal cards */
+  --color-surface-2: #1b1f33;   /* inputs, hovered rows */
+  --color-surface-3: #23283f;
+  --color-line: #262b42;        /* thin borders */
+  --color-line-strong: #353b58;
+
+  --color-ink: #f4f5fb;         /* primary text */
+  --color-muted: #9aa0b8;       /* secondary text */
+  --color-faint: #6b7190;
+
+  --color-primary: #8b5cf6;     /* purple accent */
+  --color-primary-bright: #a78bfa;
+  --color-primary-strong: #7c3aed;
+  --color-primary-soft: rgb(139 92 246 / 0.14);
+
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+  --color-success: #34d399;
+
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-glow: 0 10px 30px -10px rgb(139 92 246 / 0.55);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background: rgb(139 92 246 / 0.4);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-primary-bright);
+    outline-offset: 2px;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.75);
+    cursor: pointer;
+  }
+  /* Thin dark scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2c3150 transparent;
+  }
+}
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(248 113 113 / 0.55); }
+  50% { box-shadow: 0 0 0 6px rgb(248 113 113 / 0); }
+}
+.rush-pulse {
+  animation: pulse-ring 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rush-pulse { animation: none; }
+}
